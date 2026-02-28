@@ -1,12 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MarmitaTech - Login</title>
-    <style>body { font-family: sans-serif; display: flex; justify-content: center; margin-top: 100px; background: #f4f4f4; }</style>
+    <title>J'Rick Restaurant - Login</title>
+    <!-- Favicon hospedado na web -->
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Food_icon.svg/1024px-Food_icon.svg.png" type="image/png">
+    <style>
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            margin-top: 100px; 
+            background: #f4f4f4; 
+            flex-direction: column; 
+            align-items: center;
+        }
+        .logo { 
+            font-size: 36px; 
+            font-weight: bold; 
+            color: #e76f51; 
+            margin-bottom: 20px; 
+        }
+        .logo img { 
+            width: 100px; 
+            height: auto; 
+            margin-bottom: 20px; 
+        }
+        form { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            width: 300px;
+            text-align: center;
+        }
+        input { 
+            padding: 10px; 
+            width: 100%; 
+            margin: 5px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        button { 
+            padding: 10px 20px; 
+            background-color: #e76f51; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        button:hover { 
+            background-color: #f4a261; 
+        }
+    </style>
 </head>
 <body>
-    <form action="/login" method="POST" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <h2>🥪 MarmitaTech Login</h2>
+    <div class="logo">
+        <!-- Logo de Texto -->
+        J'Rick Restaurant
+        <!-- Logo de Imagem (adicione o caminho da sua imagem aqui) -->
+        <!-- <img src="caminho/para/sua/logo.png" alt="Logo J'Rick Restaurant"> -->
+    </div>
+    <form action="/login" method="POST">
+        <h2>Login</h2>
         <input type="text" name="username" placeholder="Usuário" required><br><br>
         <input type="password" name="password" placeholder="Senha" required><br><br>
         <button type="submit">Entrar</button>
