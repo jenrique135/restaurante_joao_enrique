@@ -164,7 +164,7 @@ jobs:
 
           args: >
 
-            -Dsonar.projectKey=marmitatech-pro
+            -Dsonar.projectKey=jenrique_devops
 
             -Dsonar.projectName="MarmitaTech Pro"
 
