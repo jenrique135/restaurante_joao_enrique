@@ -156,9 +156,9 @@ jobs:
 
         env:
 
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.TOKEN_SONAR }}
 
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.ENDERECO_SONAR }}
 
         with:
 
@@ -166,6 +166,6 @@ jobs:
 
             -Dsonar.projectKey=jenrique_devops
 
-            -Dsonar.projectName="MarmitaTech Pro"
+            -Dsonar.projectName="Jenrique_Project"
 
             -Dsonar.sources=.
