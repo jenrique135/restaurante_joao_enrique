@@ -1,112 +1,144 @@
 const express = require('express');
+const mysql = require('mysql2');
 const bodyParser = require('body-parser');
-const mysql = require('mysql2/promise');
-const path = require('path');
 const bcrypt = require('bcrypt');
 
 const app = express();
-
-const dbConfig = {
-    host: process.env.DB_HOST || 'db',
-    user: process.env.DB_USER || 'user',
-    password: process.env.DB_PASS || 'password',
-    database: process.env.DB_NAME || 'marmitadb'
-};
-
-let pool;
-
-async function connectWithRetry() {
-    console.log('🔍 [INFRA] Tentando conectar ao MySQL...');
-    for (let i = 1; i <= 10; i++) {
-        try {
-            pool = mysql.createPool(dbConfig);
-            await pool.query('SELECT 1');
-            console.log('✅ [DATABASE] Conectado ao MySQL com sucesso!');
-            return;
-        } catch (err) {
-            console.log(`⚠️ [DATABASE] Tentativa ${i}/10 falhou. Aguardando...`);
-            await new Promise(res => setTimeout(res, 3000));
-        }
-    }
-    process.exit(1);
-}
+const saltRounds = 10;
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// =====================
+// CONEXÃO COM MYSQL (DOCKER)
+// =====================
+const connection = mysql.createConnection({
+  host: 'localhost',
+  port: 3307,
+  user: 'user',
+  password: 'password',
+  database: 'marmitadb'
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Erro ao conectar:', err);
+    return;
+  }
+  console.log('Conectado ao MySQL');
+});
+
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
-// ================= ROTAS =================
+// =====================
+// PÁGINA INICIAL
+// =====================
+app.get('/', (req, res) => {
+    res.render('login');
+});
 
-// Tela de login
-app.get('/', (req, res) => res.render('login'));
+// =====================
+// FORMULÁRIO CADASTRO
+// =====================
+app.get('/register', (req, res) => {
+  res.send(`
+    <h2>Cadastro</h2>
+    <form method="POST" action="/register">
+      <input name="username" placeholder="Usuário" required /><br><br>
+      <input name="password" type="password" placeholder="Senha" required /><br><br>
+      <button type="submit">Cadastrar</button>
+    </form>
+    <br>
+    <a href="/">Voltar</a>
+  `);
+});
 
-// Tela de cadastro
-app.get('/register', (req, res) => res.render('register'));
-
-// Cadastro de usuário (com hash)
+// =====================
+// CADASTRAR USUÁRIO
+// =====================
 app.post('/register', async (req, res) => {
+  try {
     const { username, password } = req.body;
 
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, saltRounds);
 
-        await pool.query(
-            'INSERT INTO users (username, password) VALUES (?, ?)',
-            [username, hashedPassword]
-        );
+    const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
 
-        res.redirect('/');
-    } catch (err) {
+    connection.query(sql, [username, hash], (err) => {
+      if (err) {
         console.error(err);
-        res.status(500).send("Erro ao cadastrar.");
-    }
+        return res.send('Erro ao cadastrar');
+      }
+
+      res.send(`
+        <h2>Usuário cadastrado com sucesso ✅</h2>
+        <a href="/login">Ir para login</a>
+      `);
+    });
+  } catch (err) {
+    console.error(err);
+    res.send('Erro interno');
+  }
 });
 
-// Login seguro
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-
-    try {
-        const [rows] = await pool.query(
-            'SELECT * FROM users WHERE username = ?',
-            [username]
-        );
-
-        if (rows.length === 0) {
-            return res.send('<h1>Login Inválido</h1><a href="/">Voltar</a>');
-        }
-
-        const user = rows[0];
-
-        const match = await bcrypt.compare(password, user.password);
-
-        if (match) {
-            res.redirect('/dashboard');
-        } else {
-            res.send('<h1>Login Inválido</h1><a href="/">Voltar</a>');
-        }
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Erro no banco.");
-    }
+// =====================
+// FORMULÁRIO LOGIN
+// =====================
+app.get('/login', (req, res) => {
+  res.send(`
+    <h2>Login</h2>
+    <form method="POST" action="/login">
+      <input name="username" placeholder="Usuário" required /><br><br>
+      <input name="password" type="password" placeholder="Senha" required /><br><br>
+      <button type="submit">Entrar</button>
+    </form>
+    <br>
+    <a href="/">Voltar</a>
+  `);
 });
 
-// Dashboard
-app.get('/dashboard', async (req, res) => {
-    try {
-        const [items] = await pool.query('SELECT * FROM items');
-        const [orders] = await pool.query('SELECT * FROM orders');
+// =====================
+// LOGIN
+// =====================
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
 
-        res.render('dashboard', { items, orders });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Erro ao carregar dashboard.");
+  const sql = 'SELECT * FROM users WHERE username = ?';
+
+  connection.query(sql, [username], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.send('Erro no servidor');
     }
+
+    if (results.length === 0) {
+      return res.send('Usuário não encontrado');
+    }
+
+    const user = results[0];
+
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.send('Erro interno');
+      }
+
+      if (result) {
+        res.send(`
+          <h2>Login realizado com sucesso 🎉</h2>
+          <p>Bem-vindo, ${user.username}</p>
+          <a href="/">Voltar</a>
+        `);
+      } else {
+        res.send('Senha incorreta');
+      }
+    });
+  });
 });
 
-// ================= START =================
-
-connectWithRetry().then(() => {
-    app.listen(3000, () => console.log('🚀 MARMITATECH PRO ONLINE NA PORTA 3000'));
+// =====================
+// SERVIDOR
+// =====================
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Servidor rodando em http://localhost:3000');
 });
