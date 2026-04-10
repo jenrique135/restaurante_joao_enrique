@@ -1,23 +1,37 @@
 const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto'); // nativo do Node.js, sem instalação
 
 const app = express();
-const saltRounds = 10;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // =====================
+// FUNÇÕES DE HASH (crypto nativo)
+// =====================
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.createHmac('sha256', salt).update(password).digest('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  const hashVerify = crypto.createHmac('sha256', salt).update(password).digest('hex');
+  return hashVerify === hash;
+}
+
+// =====================
 // CONEXÃO COM MYSQL (DOCKER)
 // =====================
 const connection = mysql.createConnection({
-  host: 'localhost',
-  port: 3307,
-  user: 'user',
-  password: 'password',
-  database: 'marmitadb'
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3307,
+  user: process.env.DB_USER || 'user',
+  password: process.env.DB_PASS || 'password',
+  database: process.env.DB_NAME || 'marmitadb'
 });
 
 connection.connect((err) => {
@@ -34,7 +48,7 @@ app.set('view engine', 'ejs');
 // PÁGINA INICIAL
 // =====================
 app.get('/', (req, res) => {
-    res.render('login');
+  res.render('login');
 });
 
 // =====================
@@ -56,29 +70,24 @@ app.get('/register', (req, res) => {
 // =====================
 // CADASTRAR USUÁRIO
 // =====================
-app.post('/register', async (req, res) => {
-  try {
-    const { username, password } = req.body;
+app.post('/register', (req, res) => {
+  const { username, password } = req.body;
 
-    const hash = await bcrypt.hash(password, saltRounds);
+  const stored = hashPassword(password);
 
-    const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
+  const sql = 'INSERT INTO users (username, password) VALUES (?, ?)';
 
-    connection.query(sql, [username, hash], (err) => {
-      if (err) {
-        console.error(err);
-        return res.send('Erro ao cadastrar');
-      }
+  connection.query(sql, [username, stored], (err) => {
+    if (err) {
+      console.error(err);
+      return res.send('Erro ao cadastrar');
+    }
 
-      res.send(`
-        <h2>Usuário cadastrado com sucesso ✅</h2>
-        <a href="/login">Ir para login</a>
-      `);
-    });
-  } catch (err) {
-    console.error(err);
-    res.send('Erro interno');
-  }
+    res.send(`
+      <h2>Usuário cadastrado com sucesso ✅</h2>
+      <a href="/login">Ir para login</a>
+    `);
+  });
 });
 
 // =====================
@@ -117,22 +126,15 @@ app.post('/login', (req, res) => {
 
     const user = results[0];
 
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) {
-        console.error(err);
-        return res.send('Erro interno');
-      }
-
-      if (result) {
-        res.send(`
-          <h2>Login realizado com sucesso 🎉</h2>
-          <p>Bem-vindo, ${user.username}</p>
-          <a href="/">Voltar</a>
-        `);
-      } else {
-        res.send('Senha incorreta');
-      }
-    });
+    if (verifyPassword(password, user.password)) {
+      res.send(`
+        <h2>Login realizado com sucesso 🎉</h2>
+        <p>Bem-vindo, ${user.username}</p>
+        <a href="/">Voltar</a>
+      `);
+    } else {
+      res.send('Senha incorreta');
+    }
   });
 });
 

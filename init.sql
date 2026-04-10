@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS orders (
     status VARCHAR(20) DEFAULT 'Aberto'
 );
 
--- SENHA: admin123 (já hasheada com bcrypt)
+-- SENHA: admin123 (hasheada com HMAC-SHA256 + salt, formato: salt:hash)
 INSERT INTO users (username, password) VALUES 
-('admin', '$2b$10$wH8Q1mZ9mJH9lQ8H8l1Q1eXH6gQp7lQwz7K8uF1rJp7F6mFQz0zQK');
+('admin', 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4:18790963ae27d0273292ddda92ed337ae2492c920badc3a854c32eaefabcaf92');
 
 INSERT INTO items (name, category) VALUES 
 ('Arroz Branco', 'Base'),
