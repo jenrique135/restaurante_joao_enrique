@@ -1,15 +1,70 @@
+<!-- ================= LOGIN.EJS ================= -->
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>MarmitaTech - Login</title>
-    <style>body { font-family: sans-serif; display: flex; justify-content: center; margin-top: 100px; background: #f4f4f4; }</style>
+    <meta charset="UTF-8">
+    <title>Jenrique Restaurant - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+        body{
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:linear-gradient(135deg,#1d3557,#457b9d);
+        }
+
+        .container{
+            text-align:center;
+            background:rgba(255,255,255,0.1);
+            backdrop-filter:blur(12px);
+            padding:40px;
+            border-radius:20px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.3);
+            width:320px;
+            color:white;
+        }
+
+        h1{margin-bottom:20px;}
+
+        input{
+            width:100%;
+            padding:12px;
+            margin:8px 0;
+            border:none;
+            border-radius:8px;
+            outline:none;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:25px;
+            background:#e63946;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        button:hover{background:#ff6b6b;transform:scale(1.05);}        
+    </style>
 </head>
 <body>
-    <form action="/login" method="POST" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <h2>🥪 MarmitaTech Login</h2>
-        <input type="text" name="username" placeholder="Usuário" required><br><br>
-        <input type="password" name="password" placeholder="Senha" required><br><br>
+
+<div class="container">
+    <h1>🍽️ Jenrique Restaurant</h1>
+    <form action="/login" method="POST">
+        <input type="text" name="username" placeholder="Usuário" required>
+        <input type="password" name="password" placeholder="Senha" required>
         <button type="submit">Entrar</button>
     </form>
+</div>
+
 </body>
 </html>
+
