@@ -57,7 +57,7 @@ jobs:
 
       - name: Criar configuração temporária do ESLint
         run: |
-          cat > eslint.config.js <<'EOF'
+          cat > eslint.config.js << 'EOF'
           const globals = require("globals");
 
           module.exports = [
@@ -86,19 +86,16 @@ jobs:
   job_sonar:
     needs: estagio_lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Essencial para o Sonar ler o histórico de branches
+          fetch-depth: 0
 
       - name: Criar sonar-project.properties dinâmico
         run: |
-          # Define o nome do repo e a branch dinamicamente
           echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
           echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
-          echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
           echo "sonar.sources=." >> sonar-project.properties
           echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
           echo "sonar.exclusions=node_modules/**,.git/**,.github/**,coverage/**,dist/**" >> sonar-project.properties
@@ -111,7 +108,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.TOKEN_SONAR }}
           SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
-        with:
-          # Reforça a branch nos argumentos da execução
-          args: >
-            -Dsonar.branch.name=${{ github.ref_name }}
