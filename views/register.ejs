@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>J'Enrique Restaurant — Login</title>
+  <title>J'Enrique Restaurant — Cadastro</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -40,6 +40,8 @@
       margin-bottom: 1.25rem;
     }
     input:focus { outline: none; border-color: #e85d2f; background: #fff; }
+
+    .hint { font-size: .78rem; color: #aaa; margin-top: -.9rem; margin-bottom: 1.25rem; }
 
     .btn-primary {
       width: 100%; padding: .9rem;
@@ -86,7 +88,7 @@
     <div class="emoji">🍱</div>
     <div>
       <h1>J'Enrique Restaurant</h1>
-      <p>Gestão de marmitas</p>
+      <p>Criar nova conta</p>
     </div>
   </div>
 
@@ -97,21 +99,25 @@
     <div class="success-box">✅ <%= success %></div>
   <% } %>
 
-  <form method="POST" action="/login">
+  <form method="POST" action="/register">
     <label for="username">Usuário</label>
     <input type="text" id="username" name="username"
-           placeholder="Seu usuário" autocomplete="username" required />
+           placeholder="letras, números ou _"
+           maxlength="50" autocomplete="username" required />
+    <p class="hint">Entre 3 e 50 caracteres, sem espaços.</p>
 
     <label for="password">Senha</label>
     <input type="password" id="password" name="password"
-           placeholder="Sua senha" autocomplete="current-password" required />
+           placeholder="mínimo 6 caracteres"
+           autocomplete="new-password" required />
+    <p class="hint">Mínimo 6 caracteres.</p>
 
-    <button type="submit" class="btn-primary">Entrar →</button>
+    <button type="submit" class="btn-primary">Criar conta →</button>
   </form>
 
   <div class="divider">ou</div>
 
-  <a href="/register" class="btn-secondary">Criar conta</a>
+  <a href="/login" class="btn-secondary">Já tenho conta</a>
 
 </div>
 </body>

@@ -1,85 +1,182 @@
-
-<!-- ================= DASHBOARD.EJS ================= -->
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Jenrique Restaurant - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — J'Enrique Restaurant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f0eb; min-height: 100vh; }
 
-    <style>
-        body{
-            font-family:'Poppins',sans-serif;
-            background:#f1f5f9;
-            padding:20px;
-        }
+    header {
+      background: #fff;
+      border-bottom: 2px solid #f0e8e0;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
+    .brand span { font-size: 1.5rem; }
+    .header-actions { display: flex; gap: .75rem; }
+    .btn {
+      padding: .55rem 1.1rem; border-radius: 8px; font-size: .88rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; border: none; transition: background .15s;
+    }
+    .btn-primary { background: #e85d2f; color: #fff; }
+    .btn-primary:hover { background: #c94d22; }
+    .btn-ghost { background: transparent; border: 2px solid #e0d8d0; color: #555; }
+    .btn-ghost:hover { border-color: #e85d2f; color: #e85d2f; }
 
-        h1{
-            text-align:center;
-            margin-bottom:30px;
-            color:#1d3557;
-        }
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
 
-        .grid{
-            display:flex;
-            gap:20px;
-            justify-content:center;
-            flex-wrap:wrap;
-        }
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+    .stat-label { font-size: .8rem; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: #1a1a1a; margin-top: .2rem; }
+    .stat-value.orange { color: #e85d2f; }
+    .stat-value.green  { color: #22a86e; }
 
-        .card{
-            background:white;
-            padding:20px;
-            border-radius:15px;
-            box-shadow:0 5px 20px rgba(0,0,0,0.1);
-            width:300px;
-        }
+    /* Table */
+    .table-wrap {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+    .table-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 2px solid #f5f0eb;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .table-header h2 { font-size: 1.05rem; color: #1a1a1a; }
+    .table-header small { color: #aaa; font-size: .82rem; }
 
-        input{
-            width:100%;
-            padding:10px;
-            margin:5px 0;
-            border:1px solid #ddd;
-            border-radius:8px;
-        }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #faf8f5; }
+    th { padding: .85rem 1rem; text-align: left; font-size: .78rem; font-weight: 700;
+         color: #888; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+    td { padding: .9rem 1rem; font-size: .9rem; color: #2a2a2a; border-top: 1px solid #f5f0eb; }
+    tr:hover td { background: #fdf9f6; }
 
-        button{
-            width:100%;
-            padding:10px;
-            border:none;
-            border-radius:20px;
-            background:#457b9d;
-            color:white;
-            cursor:pointer;
-        }
+    .badge {
+      display: inline-block; padding: .3em .75em; border-radius: 20px;
+      font-size: .75rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge-aberto    { background: #fff3cd; color: #856404; }
+    .badge-preparo   { background: #cff4fc; color: #055160; }
+    .badge-entregue  { background: #d1e7dd; color: #0a3622; }
+    .badge-cancelado { background: #f8d7da; color: #58151c; }
 
-        button:hover{background:#1d3557;}
+    .empty {
+      text-align: center; padding: 4rem 2rem; color: #bbb;
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: .5rem; }
+    .empty p { font-size: 1rem; }
 
-        ul{margin-top:10px;}
-    </style>
+    .refresh-note { font-size: .78rem; color: #bbb; margin-top: 1rem; text-align: right; }
+  </style>
 </head>
 <body>
 
-<h1>🍽️ Painel - Jenrique Restaurant</h1>
+<header>
+  <div class="brand"><span>🍱</span> J'Enrique Restaurant</div>
+  <div class="header-actions">
+    <a href="/orders/new" class="btn btn-primary">+ Novo Pedido</a>
+    <a href="/admin"         class="btn btn-ghost">🍳 Cozinha</a>
+    <a href="/admin/export" class="btn btn-ghost" download>⬇ Baixar Relatório</a>
+    <a href="/login"      class="btn btn-ghost">Login</a>
+    <a href="/register"   class="btn btn-ghost">Cadastro</a>
+  </div>
+</header>
 
-<div class="grid">
-    <div class="card">
-        <h3>Novo Item</h3>
-        <form action="/add-item" method="POST">
-            <input type="text" name="name" placeholder="Nome" required>
-            <input type="text" name="category" placeholder="Categoria">
-            <button type="submit">Cadastrar</button>
-        </form>
+<main>
+
+  <!-- Stats -->
+  <%
+    const total    = orders.length;
+    const abertos  = orders.filter(o => o.status === 'Aberto').length;
+    const entregues = orders.filter(o => o.status === 'Entregue').length;
+    const receita  = orders.filter(o => o.status !== 'Cancelado')
+                           .reduce((s, o) => s + parseFloat(o.total), 0);
+  %>
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total de Pedidos</div>
+      <div class="stat-value"><%= total %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Em Aberto</div>
+      <div class="stat-value orange"><%= abertos %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Entregues</div>
+      <div class="stat-value green"><%= entregues %></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Receita Total</div>
+      <div class="stat-value orange">R$ <%= receita.toFixed(2).replace('.',',') %></div>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <h2>📋 Pedidos Recentes</h2>
+      <small>Atualizado em: <%= new Date().toLocaleTimeString('pt-BR') %></small>
     </div>
 
-    <div class="card">
-        <h3>Itens</h3>
-        <ul>
-            <% items.forEach(item => { %>
-                <li><%= item.name %> (<%= item.category %>)</li>
-            <% }) %>
-        </ul>
-    </div>
-</div>
+    <% if (orders.length === 0) { %>
+      <div class="empty">
+        <div class="icon">🍽️</div>
+        <p>Nenhum pedido registrado ainda.<br/>Clique em <strong>+ Novo Pedido</strong> para começar.</p>
+      </div>
+    <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Marmita</th>
+          <th>Categoria</th>
+          <th>Qtd</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Criado em</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(o => {
+          const badgeClass = {
+            'Aberto':    'badge-aberto',
+            'Em preparo':'badge-preparo',
+            'Entregue':  'badge-entregue',
+            'Cancelado': 'badge-cancelado'
+          }[o.status] || 'badge-aberto';
+          const dt = new Date(o.created_at);
+          const dtFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+        %>
+        <tr>
+          <td><strong>#<%= o.id %></strong></td>
+          <td><%= o.customer_name %></td>
+          <td><%= o.item_name %></td>
+          <td><%= o.category || '—' %></td>
+          <td><%= o.quantity %></td>
+          <td>R$ <%= parseFloat(o.total).toFixed(2).replace('.',',') %></td>
+          <td><span class="badge <%= badgeClass %>"><%= o.status %></span></td>
+          <td><%= dtFmt %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    <% } %>
+  </div>
+  <p class="refresh-note">💡 Recarregue a página para ver novos pedidos</p>
+</main>
 
 </body>
 </html>
