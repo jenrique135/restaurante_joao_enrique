@@ -34,7 +34,7 @@ function validateUserInput(username, password) {
     const trimmed = username.trim();
     if (trimmed.length < 3 || trimmed.length > 50)
       errors.push('O usuário deve ter entre 3 e 50 caracteres.');
-    if (!/^[a-zA-Z0-9_]+$/.test(trimmed))
+    if (!/^\w+$/.test(trimmed))
       errors.push('O usuário só pode conter letras, números e underscores.');
   }
   if (!password || typeof password !== 'string' || password.trim() === '') {
@@ -284,7 +284,7 @@ app.post('/orders', (req, res) => {
       if (err) return res.status(500).json({ error: 'Erro ao registrar pedido.' });
 
       // Aceita JSON (API) ou redirect (formulário web)
-      if (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+      if (req.headers['content-type']?.includes('application/json')) {
         return res.status(201).json({
           message: 'Pedido registrado com sucesso.',
           id: result.insertId,
