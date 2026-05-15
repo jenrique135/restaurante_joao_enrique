@@ -1,8 +1,8 @@
-name: integracao continua
+name: integracao continua e staging
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["develop", "staging"]
   pull_request:
     branches: ["develop"]
 
@@ -85,6 +85,8 @@ jobs:
 
   job_sonar:
     needs: estagio_lint
+    # Restringe este job específico de Sonar básico apenas para a develop
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -96,6 +98,7 @@ jobs:
         run: |
           echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
           echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
+          echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
           echo "sonar.sources=." >> sonar-project.properties
           echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
           echo "sonar.exclusions=node_modules/**,.git/**,.github/**,coverage/**,dist/**" >> sonar-project.properties
@@ -108,3 +111,50 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.TOKEN_SONAR }}
           SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
+        with:
+          # Reforça a branch nos argumentos da execução
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
+
+  # ==========================================
+  # ETAPAS DE STAGING (Esqueleto)
+  # ==========================================
+
+  job_release_docker:
+    needs: estagio_lint
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: TO DO - Checkout do código
+        run: echo "Você deve implementar o checkout aqui"
+
+      - name: TO DO - Login no Registry
+        run: echo "Você deve implementar o login do Docker aqui"
+
+      - name: TO DO - Build e Push da Imagem
+        run: echo "Você deve implementar a criação do artefato (imagem) e o envio pro registry aqui"
+
+  job_trivy_sonar:
+    needs: job_release_docker
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: TO DO - Checkout do código para o Sonar
+        run: echo "Você deve implementar o checkout com fetch-depth 0 aqui"
+
+      - name: TO DO - Scan de Segurança com Trivy
+        run: echo "Você deve implementar a varredura do Trivy gerando o arquivo JSON aqui"
+
+      - name: TO DO - SonarQube lendo o Trivy (External Issues)
+        run: echo "Você deve implementar o passo do Sonar injetando o JSON do Trivy aqui"
+
+  job_deploy_aws:
+    needs: job_trivy_sonar
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: TO DO - Copiar arquivo compose pra AWS (SCP)
+        run: echo "Você deve implementar a action de SCP aqui"
+
+      - name: TO DO - Executar comandos na AWS (SSH)
+        run: echo "Você deve implementar a action de SSH (docker compose pull / up) aqui"
