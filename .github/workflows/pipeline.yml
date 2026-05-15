@@ -127,25 +127,19 @@ jobs:
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
-
-      - name: TO DO - Login no Registry
-        run: echo "Você deve implementar o login do Docker aqui"
-
-      - name: Build da Imagem Docker
-        run: docker build -t marmitatech-pro:${{ github.sha }} .
-
-      - name: Salvar imagem como arquivo tar
-        run: docker save marmitatech-pro:${{ github.sha }} -o marmitatech-pro.tar
-
-      - name: Fazer upload da imagem para uso entre jobs
-        uses: actions/upload-artifact@v4
+ 
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
         with:
-          name: marmitatech-pro-image
-          path: marmitatech-pro.tar
-          retention-days: 1
+          username: jenrique138
+          password: ${{ secrets.TOKEN_DOCKERHUB }}
+ 
+      - name: Build da Imagem Docker
+        run: docker build -t jenrique138/marmitatech-pro:${{ github.sha }} .
+ 
+      - name: Push da Imagem para o Docker Hub
+        run: docker push jenrique138/marmitatech-pro:${{ github.sha }}
 
-      - name: TO DO - Push da Imagem
-        run: echo "Você deve implementar o push da imagem pro registry aqui"
 
   job_trivy_sonar:
     needs: job_release_docker
