@@ -158,6 +158,41 @@ jobs:
           output: trivy-result.json
           exit-code: 0
 
+      - name: Converter relatório do Trivy para formato do Sonar
+        run: |
+          python3 - <<'PYEOF'
+          import json, sys
+
+          with open("trivy-result.json") as f:
+            trivy = json.load(f)
+
+          issues = []
+          for result in trivy.get("Results", []):
+            for vuln in result.get("Vulnerabilities", []):
+              severity_map = {
+                "CRITICAL": "CRITICAL",
+                "HIGH":     "MAJOR",
+                "MEDIUM":   "MINOR",
+                "LOW":      "INFO",
+                "UNKNOWN":  "INFO"
+              }
+              issues.append({
+                "engineId":   "trivy",
+                "ruleId":     vuln.get("VulnerabilityID", "UNKNOWN"),
+                "severity":   severity_map.get(vuln.get("Severity", "UNKNOWN"), "INFO"),
+                "type":       "VULNERABILITY",
+                "primaryLocation": {
+                  "message":   vuln.get("Title", vuln.get("Description", "Sem descrição"))[:255],
+                  "filePath":  "."
+                }
+              })
+
+          with open("sonar-trivy.json", "w") as f:
+            json.dump({"issues": issues}, f, indent=2)
+
+          print(f"Convertidas {len(issues)} vulnerabilidades para sonar-trivy.json")
+          PYEOF
+
       - name: Criar sonar-project.properties para staging
         run: |
           echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
@@ -166,7 +201,7 @@ jobs:
           echo "sonar.sources=." >> sonar-project.properties
           echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
           echo "sonar.exclusions=node_modules/**,.git/**,.github/**,coverage/**,dist/**" >> sonar-project.properties
-          echo "sonar.externalIssuesReportPaths=trivy-result.json" >> sonar-project.properties
+          echo "sonar.externalIssuesReportPaths=sonar-trivy.json" >> sonar-project.properties
 
       - name: SonarQube Scan com resultado do Trivy
         uses: sonarsource/sonarqube-scan-action@master
@@ -187,4 +222,3 @@ jobs:
 
       - name: TO DO - Executar comandos na AWS (SSH)
         run: echo "Você deve implementar a action de SSH (docker compose pull / up) aqui"
-
