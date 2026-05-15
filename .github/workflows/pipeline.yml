@@ -125,25 +125,35 @@ jobs:
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
-      - name: TO DO - Checkout do código
-        run: echo "Você deve implementar o checkout aqui"
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
       - name: TO DO - Login no Registry
         run: echo "Você deve implementar o login do Docker aqui"
 
-      - name: TO DO - Build e Push da Imagem
-        run: echo "Você deve implementar a criação do artefato (imagem) e o envio pro registry aqui"
+      - name: Build da Imagem Docker
+        run: docker build -t marmitatech-pro:${{ github.sha }} .
+
+      - name: TO DO - Push da Imagem
+        run: echo "Você deve implementar o push da imagem pro registry aqui"
 
   job_trivy_sonar:
     needs: job_release_docker
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
-      - name: TO DO - Checkout do código para o Sonar
-        run: echo "Você deve implementar o checkout com fetch-depth 0 aqui"
+      - name: Checkout do código para o Sonar
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: TO DO - Scan de Segurança com Trivy
-        run: echo "Você deve implementar a varredura do Trivy gerando o arquivo JSON aqui"
+      - name: Scan de Segurança com Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: marmitatech-pro:${{ github.sha }}
+          format: json
+          output: trivy-result.json
+          exit-code: 0
 
       - name: TO DO - SonarQube lendo o Trivy (External Issues)
         run: echo "Você deve implementar o passo do Sonar injetando o JSON do Trivy aqui"
