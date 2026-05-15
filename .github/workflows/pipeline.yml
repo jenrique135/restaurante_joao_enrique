@@ -188,13 +188,3 @@ jobs:
       - name: TO DO - Executar comandos na AWS (SSH)
         run: echo "Você deve implementar a action de SSH (docker compose pull / up) aqui"
 
-  job_deploy_aws:
-    needs: job_trivy_sonar
-    if: github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
-    steps:
-      - name: TO DO - Copiar arquivo compose pra AWS (SCP)
-        run: echo "Você deve implementar a action de SCP aqui"
-
-      - name: TO DO - Executar comandos na AWS (SSH)
-        run: echo "Você deve implementar a action de SSH (docker compose pull / up) aqui"
