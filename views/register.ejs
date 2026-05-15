@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>J'Enrique Restaurant — Cadastro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f0eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    .brand { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.75rem; }
+    .brand .emoji { font-size: 2rem; }
+    .brand h1 { font-size: 1.5rem; color: #1a1a1a; font-weight: 800; }
+    .brand p  { font-size: .85rem; color: #999; }
+
+    label { display: block; font-size: .85rem; font-weight: 600; color: #444; margin-bottom: .4rem; }
+    input {
+      width: 100%; padding: .75rem 1rem;
+      border: 2px solid #e8e0d8;
+      border-radius: 10px;
+      font-size: .95rem;
+      color: #1a1a1a;
+      background: #faf8f5;
+      transition: border-color .2s;
+      margin-bottom: 1.25rem;
+    }
+    input:focus { outline: none; border-color: #e85d2f; background: #fff; }
+
+    .hint { font-size: .78rem; color: #aaa; margin-top: -.9rem; margin-bottom: 1.25rem; }
+
+    .btn-primary {
+      width: 100%; padding: .9rem;
+      background: #e85d2f; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: #c94d22; }
+
+    .divider {
+      display: flex; align-items: center; gap: .75rem;
+      margin: 1.25rem 0; color: #ccc; font-size: .85rem;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #ece6de;
+    }
+
+    .btn-secondary {
+      display: block; width: 100%; padding: .85rem;
+      border: 2px solid #e8e0d8; border-radius: 10px;
+      text-align: center; text-decoration: none;
+      color: #555; font-size: .95rem; font-weight: 600;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-secondary:hover { border-color: #e85d2f; color: #e85d2f; }
+
+    .error-box {
+      background: #fff0ee; border: 1.5px solid #e85d2f;
+      border-radius: 10px; padding: .75rem 1rem;
+      color: #c0431a; font-size: .88rem; margin-bottom: 1.25rem;
+    }
+    .success-box {
+      background: #edfaf4; border: 1.5px solid #22a86e;
+      border-radius: 10px; padding: .75rem 1rem;
+      color: #0a3622; font-size: .88rem; margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <div class="brand">
+    <div class="emoji">🍱</div>
+    <div>
+      <h1>J'Enrique Restaurant</h1>
+      <p>Criar nova conta</p>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class="error-box">⚠️ <%= error %></div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div class="success-box">✅ <%= success %></div>
+  <% } %>
+
+  <form method="POST" action="/register">
+    <label for="username">Usuário</label>
+    <input type="text" id="username" name="username"
+           placeholder="letras, números ou _"
+           maxlength="50" autocomplete="username" required />
+    <p class="hint">Entre 3 e 50 caracteres, sem espaços.</p>
+
+    <label for="password">Senha</label>
+    <input type="password" id="password" name="password"
+           placeholder="mínimo 6 caracteres"
+           autocomplete="new-password" required />
+    <p class="hint">Mínimo 6 caracteres.</p>
+
+    <button type="submit" class="btn-primary">Criar conta →</button>
+  </form>
+
+  <div class="divider">ou</div>
+
+  <a href="/login" class="btn-secondary">Já tenho conta</a>
+
+</div>
+</body>
+</html>

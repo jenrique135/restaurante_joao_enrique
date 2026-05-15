@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Novo Pedido — J'Enrique Restaurant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f0eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 480px;
+    }
+    .logo { font-size: 2rem; margin-bottom: .25rem; }
+    h1 { font-size: 1.5rem; color: #1a1a1a; margin-bottom: .25rem; }
+    .subtitle { color: #777; font-size: .9rem; margin-bottom: 2rem; }
+    label { display: block; font-size: .85rem; font-weight: 600; color: #444; margin-bottom: .4rem; }
+    input, select {
+      width: 100%; padding: .75rem 1rem;
+      border: 2px solid #e8e0d8;
+      border-radius: 10px;
+      font-size: .95rem;
+      color: #1a1a1a;
+      background: #faf8f5;
+      transition: border-color .2s;
+      margin-bottom: 1.25rem;
+    }
+    input:focus, select:focus { outline: none; border-color: #e85d2f; background: #fff; }
+    .item-card {
+      display: none;
+      background: #fdf3ef;
+      border: 2px solid #e85d2f;
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      margin-top: -.75rem;
+      margin-bottom: 1.25rem;
+      font-size: .9rem;
+      color: #c0431a;
+    }
+    .item-card.visible { display: flex; align-items: center; gap: .75rem; }
+    .item-card .emoji { font-size: 1.4rem; }
+    .item-card strong { font-size: 1rem; }
+    .total-row {
+      background: #f5f0eb;
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .total-row span { font-size: .9rem; color: #666; }
+    .total-row strong { font-size: 1.3rem; color: #e85d2f; }
+    button[type="submit"] {
+      width: 100%;
+      padding: .9rem;
+      background: #e85d2f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    button[type="submit"]:hover { background: #c94d22; }
+    button[type="submit"]:active { transform: scale(.98); }
+    .back-link { display: block; text-align: center; margin-top: 1.25rem; color: #888; font-size: .85rem; text-decoration: none; }
+    .back-link:hover { color: #e85d2f; }
+    .error-box {
+      background: #fff0ee; border: 1.5px solid #e85d2f; border-radius: 10px;
+      padding: .75rem 1rem; color: #c0431a; font-size: .88rem; margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🍱</div>
+  <h1>Novo Pedido</h1>
+  <p class="subtitle">Selecione a marmita e informe o cliente</p>
+
+  <% if (error) { %>
+    <div class="error-box">⚠️ <%= error %></div>
+  <% } %>
+
+  <form method="POST" action="/orders">
+
+    <label for="customer_name">Nome do Cliente</label>
+    <input type="text" id="customer_name" name="customer_name"
+           placeholder="Ex: João Silva" maxlength="100" required />
+
+    <label for="item_id">Marmita</label>
+    <select id="item_id" name="item_id" required onchange="updateCard()">
+      <option value="">— Escolha uma marmita —</option>
+      <% const categories = {}; %>
+      <% items.forEach(item => { %>
+        <% const cat = item.category || 'Outros'; %>
+        <% if (!categories[cat]) { categories[cat] = []; } %>
+        <% categories[cat].push(item); %>
+      <% }); %>
+      <% Object.keys(categories).sort().forEach(cat => { %>
+        <optgroup label="<%= cat %>">
+          <% categories[cat].forEach(item => { %>
+            <option value="<%= item.id %>"
+                    data-name="<%= item.name %>"
+                    data-price="<%= item.price %>"
+                    data-category="<%= item.category %>">
+              <%= item.name %> — R$ <%= parseFloat(item.price).toFixed(2).replace('.',',') %>
+            </option>
+          <% }); %>
+        </optgroup>
+      <% }); %>
+    </select>
+
+    <div class="item-card" id="itemCard">
+      <span class="emoji">🍽️</span>
+      <div>
+        <strong id="cardName"></strong><br/>
+        <span id="cardCategory" style="color:#999;font-size:.8rem;"></span>
+      </div>
+    </div>
+
+    <label for="quantity">Quantidade</label>
+    <input type="number" id="quantity" name="quantity"
+           value="1" min="1" max="99" required oninput="updateTotal()" />
+
+    <div class="total-row">
+      <span>Total estimado</span>
+      <strong id="totalDisplay">R$ 0,00</strong>
+    </div>
+
+    <button type="submit">✅ Registrar Pedido</button>
+  </form>
+  <a href="/dashboard" class="back-link">← Ver Dashboard</a>
+</div>
+
+<script>
+  const items = <%- JSON.stringify(items) %>;
+  const itemMap = {};
+  items.forEach(i => { itemMap[i.id] = i; });
+
+  function updateCard() {
+    const sel = document.getElementById('item_id');
+    const id = parseInt(sel.value);
+    const card = document.getElementById('itemCard');
+    if (!id || !itemMap[id]) { card.classList.remove('visible'); updateTotal(); return; }
+    const item = itemMap[id];
+    document.getElementById('cardName').textContent = item.name;
+    document.getElementById('cardCategory').textContent = item.category || '';
+    card.classList.add('visible');
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const sel = document.getElementById('item_id');
+    const qty = parseInt(document.getElementById('quantity').value) || 0;
+    const id = parseInt(sel.value);
+    const totalEl = document.getElementById('totalDisplay');
+    if (!id || !itemMap[id] || qty <= 0) { totalEl.textContent = 'R$ 0,00'; return; }
+    const total = (itemMap[id].price * qty).toFixed(2).replace('.', ',');
+    totalEl.textContent = `R$ ${total}`;
+  }
+</script>
+</body>
+</html>

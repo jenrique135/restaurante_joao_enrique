@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>J'Enrique Restaurant — Cozinha</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f0eb;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #fff;
+      border-bottom: 2px solid #f0e8e0;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.15rem; color: #1a1a1a; }
+    .brand-emoji { font-size: 1.5rem; }
+    .badge-admin {
+      background: #e85d2f; color: #fff;
+      font-size: .7rem; font-weight: 700;
+      padding: .2em .6em; border-radius: 6px;
+      letter-spacing: .05em; text-transform: uppercase;
+    }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .header-right a {
+      font-size: .85rem; color: #888; text-decoration: none; font-weight: 600;
+    }
+    .header-right a:hover { color: #e85d2f; }
+    #auto-refresh-toggle {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .8rem; color: #aaa; cursor: pointer; user-select: none;
+    }
+    #auto-refresh-toggle input { accent-color: #e85d2f; cursor: pointer; }
+
+    /* ── Board ── */
+    main { padding: 1.5rem 2rem; }
+    h2.page-title { font-size: 1.1rem; color: #444; margin-bottom: 1.5rem; font-weight: 700; }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    /* ── Column ── */
+    .col {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      overflow: hidden;
+      min-height: 200px;
+    }
+    .col-header {
+      padding: .9rem 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 3px solid transparent;
+    }
+    .col-header .col-title { font-size: .85rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+    .col-count {
+      font-size: .75rem; font-weight: 700;
+      background: rgba(0,0,0,.08);
+      padding: .2em .55em; border-radius: 10px;
+    }
+
+    /* column accent colors */
+    .col-aberto   .col-header { border-color: #f0a500; background: #fffbf0; }
+    .col-aberto   .col-title  { color: #b07800; }
+    .col-cozinha  .col-header { border-color: #e85d2f; background: #fff5f2; }
+    .col-cozinha  .col-title  { color: #b83f15; }
+    .col-entrega  .col-header { border-color: #3b82f6; background: #f0f6ff; }
+    .col-entrega  .col-title  { color: #1d4ed8; }
+    .col-entregue .col-header { border-color: #22a86e; background: #edfaf4; }
+    .col-entregue .col-title  { color: #0a6644; }
+
+    /* ── Card ── */
+    .cards { padding: .75rem; display: flex; flex-direction: column; gap: .65rem; }
+
+    .card {
+      background: #faf8f5;
+      border: 1.5px solid #ece6de;
+      border-radius: 10px;
+      padding: .9rem 1rem;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.1); transform: translateY(-1px); }
+
+    .card-id   { font-size: .72rem; color: #bbb; font-weight: 700; margin-bottom: .3rem; }
+    .card-name { font-size: .97rem; font-weight: 700; color: #1a1a1a; margin-bottom: .15rem; }
+    .card-item { font-size: .82rem; color: #666; margin-bottom: .15rem; }
+    .card-meta { font-size: .78rem; color: #aaa; margin-bottom: .8rem; }
+
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .card-total  { font-size: .9rem; font-weight: 800; color: #e85d2f; }
+
+    /* ── Advance button ── */
+    .btn-advance {
+      padding: .38rem .85rem;
+      border: none; border-radius: 7px;
+      font-size: .78rem; font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn-advance:active { transform: scale(.96); }
+    .col-aberto  .btn-advance { background: #e85d2f; color: #fff; }
+    .col-aberto  .btn-advance:hover { background: #c94d22; }
+    .col-cozinha .btn-advance { background: #3b82f6; color: #fff; }
+    .col-cozinha .btn-advance:hover { background: #1d4ed8; }
+    .col-entrega .btn-advance { background: #22a86e; color: #fff; }
+    .col-entrega .btn-advance:hover { background: #178055; }
+
+    /* ── Cancel button ── */
+    .btn-cancel {
+      padding: .38rem .7rem;
+      border: 1.5px solid #ddd; border-radius: 7px;
+      font-size: .75rem; font-weight: 600; color: #aaa;
+      background: transparent; cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-cancel:hover { border-color: #e85d2f; color: #e85d2f; }
+
+    /* ── Empty state ── */
+    .empty-col {
+      padding: 2rem 1rem; text-align: center; color: #ccc; font-size: .85rem;
+    }
+    .empty-col .icon { font-size: 1.8rem; margin-bottom: .4rem; }
+
+    /* ── Spinner overlay ── */
+    .card.loading { opacity: .5; pointer-events: none; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1a1a1a; color: #fff;
+      padding: .7rem 1.4rem; border-radius: 10px;
+      font-size: .88rem; font-weight: 600;
+      transition: transform .3s ease, opacity .3s ease;
+      opacity: 0; pointer-events: none; z-index: 100;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .board { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      main { padding: 1rem; }
+      .board { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-emoji">🍱</span>
+    J'Enrique Restaurant
+    <span class="badge-admin">Admin</span>
+  </div>
+  <div class="header-right">
+    <label id="auto-refresh-toggle">
+      <input type="checkbox" id="autoRefresh" checked />
+      Auto-refresh (15s)
+    </label>
+    <a href="/orders/new">+ Pedido</a>
+    <a href="/admin/export" download>⬇ Relatório</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/">Sair</a>
+  </div>
+</header>
+
+<main>
+  <h2 class="page-title">📋 Painel de Produção</h2>
+
+  <div class="board" id="board">
+
+    <!-- ABERTO -->
+    <div class="col col-aberto" data-status="Aberto">
+      <div class="col-header">
+        <span class="col-title">🟡 Aberto</span>
+        <span class="col-count" id="count-Aberto">0</span>
+      </div>
+      <div class="cards" id="col-Aberto"></div>
+    </div>
+
+    <!-- COZINHA -->
+    <div class="col col-cozinha" data-status="Em preparo">
+      <div class="col-header">
+        <span class="col-title">🔥 Cozinha</span>
+        <span class="col-count" id="count-Em preparo">0</span>
+      </div>
+      <div class="cards" id="col-Em preparo"></div>
+    </div>
+
+    <!-- ENTREGA -->
+    <div class="col col-entrega" data-status="Saiu para entrega">
+      <div class="col-header">
+        <span class="col-title">🛵 Entrega</span>
+        <span class="col-count" id="count-Saiu para entrega">0</span>
+      </div>
+      <div class="cards" id="col-Saiu para entrega"></div>
+    </div>
+
+    <!-- ENTREGUE -->
+    <div class="col col-entregue" data-status="Entregue">
+      <div class="col-header">
+        <span class="col-title">✅ Entregue</span>
+        <span class="col-count" id="count-Entregue">0</span>
+      </div>
+      <div class="cards" id="col-Entregue"></div>
+    </div>
+
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+  const FLOW = ['Aberto', 'Em preparo', 'Saiu para entrega', 'Entregue'];
+  const NEXT_LABEL = {
+    'Aberto':            '🔥 Enviar à Cozinha',
+    'Em preparo':        '🛵 Saiu para Entrega',
+    'Saiu para entrega': '✅ Confirmar Entrega',
+  };
+
+  // ── Toast ──────────────────────────────────────────
+  function showToast(msg, duration = 2500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
+
+  // ── Render ─────────────────────────────────────────
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderBoard(orders) {
+    // Clear columns
+    FLOW.forEach(s => {
+      document.getElementById('col-' + s).innerHTML = '';
+      document.getElementById('count-' + s).textContent = '0';
+    });
+
+    const counts = {};
+    FLOW.forEach(s => counts[s] = 0);
+
+    orders.forEach(order => {
+      const status = order.status;
+      if (!FLOW.includes(status)) return;
+      counts[status]++;
+
+      const nextStatus = FLOW[FLOW.indexOf(status) + 1];
+      const total = parseFloat(order.total).toFixed(2).replace('.', ',');
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = order.id;
+
+      card.innerHTML = `
+        <div class="card-id">#${order.id} · ${formatDate(order.created_at)}</div>
+        <div class="card-name">${order.customer_name}</div>
+        <div class="card-item">🍱 ${order.item_name} × ${order.quantity}</div>
+        <div class="card-meta">${order.category || ''}</div>
+        <div class="card-footer">
+          <span class="card-total">R$ ${total}</span>
+          <div style="display:flex;gap:.4rem;">
+            ${status !== 'Entregue' ? `
+              <button class="btn-cancel" onclick="cancelOrder(${order.id}, this)">✕</button>
+              <button class="btn-advance" onclick="advance(${order.id}, '${nextStatus}', this)">
+                ${NEXT_LABEL[status]}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('col-' + status).appendChild(card);
+    });
+
+    FLOW.forEach(s => {
+      document.getElementById('count-' + s).textContent = counts[s];
+      const col = document.getElementById('col-' + s);
+      if (counts[s] === 0) {
+        const icons = { 'Aberto': '🟡', 'Em preparo': '🔥', 'Saiu para entrega': '🛵', 'Entregue': '✅' };
+        col.innerHTML = `<div class="empty-col"><div class="icon">${icons[s]}</div>Nenhum pedido</div>`;
+      }
+    });
+  }
+
+  // ── Fetch orders ───────────────────────────────────
+  async function loadBoard() {
+    try {
+      const res = await fetch('/orders');
+      const orders = await res.json();
+      renderBoard(orders);
+    } catch (e) {
+      showToast('⚠️ Erro ao carregar pedidos');
+    }
+  }
+
+  // ── Advance status ─────────────────────────────────
+  async function advance(id, newStatus, btn) {
+    const card = btn.closest('.card');
+    card.classList.add('loading');
+    try {
+      const res = await fetch(`/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error();
+      showToast(`✅ Pedido #${id} → ${newStatus}`);
+      await loadBoard();
+    } catch {
+      card.classList.remove('loading');
+      showToast('⚠️ Erro ao atualizar pedido');
+    }
+  }
+
+  // ── Cancel order ───────────────────────────────────
+  async function cancelOrder(id, btn) {
+    if (!confirm(`Cancelar pedido #${id}?`)) return;
+    const card = btn.closest('.card');
+    card.classList.add('loading');
+    try {
+      const res = await fetch(`/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Cancelado' })
+      });
+      if (!res.ok) throw new Error();
+      showToast(`🗑️ Pedido #${id} cancelado`);
+      await loadBoard();
+    } catch {
+      card.classList.remove('loading');
+      showToast('⚠️ Erro ao cancelar pedido');
+    }
+  }
+
+  // ── Auto-refresh ───────────────────────────────────
+  let refreshTimer;
+  function startRefresh() {
+    clearInterval(refreshTimer);
+    refreshTimer = setInterval(loadBoard, 15000);
+  }
+  document.getElementById('autoRefresh').addEventListener('change', function() {
+    if (this.checked) { startRefresh(); showToast('🔄 Auto-refresh ativado'); }
+    else { clearInterval(refreshTimer); showToast('⏸ Auto-refresh pausado'); }
+  });
+
+  // ── Init ───────────────────────────────────────────
+  loadBoard();
+  startRefresh();
+</script>
+</body>
+</html>
