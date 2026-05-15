@@ -127,19 +127,18 @@ jobs:
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
- 
+
       - name: Login no Docker Hub
         uses: docker/login-action@v3
         with:
           username: jenrique138
           password: ${{ secrets.TOKEN_DOCKERHUB }}
- 
+
       - name: Build da Imagem Docker
         run: docker build -t jenrique138/marmitatech-pro:${{ github.sha }} .
- 
+
       - name: Push da Imagem para o Docker Hub
         run: docker push jenrique138/marmitatech-pro:${{ github.sha }}
-
 
   job_trivy_sonar:
     needs: job_release_docker
@@ -151,24 +150,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Baixar imagem do job anterior
-        uses: actions/download-artifact@v4
-        with:
-          name: marmitatech-pro-image
-
-      - name: Carregar imagem no Docker
-        run: docker load -i marmitatech-pro.tar
-
       - name: Scan de Segurança com Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: marmitatech-pro:${{ github.sha }}
+          image-ref: jenrique138/marmitatech-pro:${{ github.sha }}
           format: json
           output: trivy-result.json
           exit-code: 0
 
-      - name: TO DO - SonarQube lendo o Trivy (External Issues)
-        run: echo "Você deve implementar o passo do Sonar injetando o JSON do Trivy aqui"
+      - name: Criar sonar-project.properties para staging
+        run: |
+          echo "sonar.projectKey=${{ github.event.repository.name }}" > sonar-project.properties
+          echo "sonar.projectName=${{ github.event.repository.name }}" >> sonar-project.properties
+          echo "sonar.branch.name=${{ github.ref_name }}" >> sonar-project.properties
+          echo "sonar.sources=." >> sonar-project.properties
+          echo "sonar.sourceEncoding=UTF-8" >> sonar-project.properties
+          echo "sonar.exclusions=node_modules/**,.git/**,.github/**,coverage/**,dist/**" >> sonar-project.properties
+          echo "sonar.externalIssuesReportPaths=trivy-result.json" >> sonar-project.properties
+
+      - name: SonarQube Scan com resultado do Trivy
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.TOKEN_SONAR }}
+          SONAR_HOST_URL: "https://devsecops.dcotech.com.br"
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
+
+  job_deploy_aws:
+    needs: job_trivy_sonar
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: TO DO - Copiar arquivo compose pra AWS (SCP)
+        run: echo "Você deve implementar a action de SCP aqui"
+
+      - name: TO DO - Executar comandos na AWS (SSH)
+        run: echo "Você deve implementar a action de SSH (docker compose pull / up) aqui"
 
   job_deploy_aws:
     needs: job_trivy_sonar
