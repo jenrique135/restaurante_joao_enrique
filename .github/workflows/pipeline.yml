@@ -148,7 +148,7 @@ jobs:
 
       - name: Scan de Segurança com Trivy
         # Versão fixada — atualize periodicamente verificando releases no GitHub
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: jenrique138/app:${{ github.sha }}
           format: json
