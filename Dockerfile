@@ -10,7 +10,7 @@ WORKDIR /app
 # para aproveitar o cache de camadas do Docker
 COPY package*.json ./
 
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm install --omit=dev --ignore-scripts
 
 COPY index.js ./
 COPY views ./views
