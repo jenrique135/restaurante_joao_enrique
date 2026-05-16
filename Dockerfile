@@ -4,6 +4,9 @@
 #   FROM node:22-alpine@sha256:<digest>
 FROM node:22-alpine
 
+# Atualiza todos os pacotes do Alpine para corrigir CVEs do sistema operacional
+RUN apk upgrade --no-cache
+
 WORKDIR /app
 
 # Copia manifesto e instala dependências antes do código-fonte
