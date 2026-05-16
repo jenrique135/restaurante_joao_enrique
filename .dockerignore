@@ -1,0 +1,34 @@
+# Dependências (serão instaladas via npm ci)
+node_modules/
+
+# Controle de versão
+.git/
+.gitignore
+
+# Variáveis de ambiente e segredos
+.env
+.env.*
+*.pem
+*.key
+*.cert
+
+# Logs e temporários
+*.log
+npm-debug.log*
+logs/
+tmp/
+temp/
+
+# Arquivos de desenvolvimento e IDE
+.vscode/
+.idea/
+*.md
+
+# Arquivos de CI/CD e Docker (não precisam ir para dentro da imagem)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Cobertura de testes
+coverage/
+.nyc_output/
