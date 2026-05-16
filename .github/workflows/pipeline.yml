@@ -136,10 +136,10 @@ jobs:
           password: ${{ secrets.TOKEN_DOCKERHUB }}
 
       - name: Build da Imagem Docker
-        run: docker build -t jenrique138/app:${{ github.sha }} .
+        run: docker build -t jenrique138/marmitatech-pro:${{ github.sha }} .
 
       - name: Push da Imagem para o Docker Hub
-        run: docker push jenrique138/app:${{ github.sha }}
+        run: docker push jenrique138/marmitatech-pro:${{ github.sha }}
 
   job_trivy_sonar:
     needs: job_release_docker
@@ -154,7 +154,7 @@ jobs:
       - name: Scan de Segurança com Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: jenrique138/app:${{ github.sha }}
+          image-ref: jenrique138/marmitatech-pro:${{ github.sha }}
           format: json
           output: trivy-result.json
           exit-code: 0
@@ -162,29 +162,51 @@ jobs:
       - name: Converter relatório do Trivy para formato do Sonar
         run: |
           python3 - <<'PYEOF'
-          import json, sys
+          import json, os
 
           with open("trivy-result.json") as f:
             trivy = json.load(f)
 
+          # Mapeia o alvo do Trivy para um arquivo real do projeto
+          file_map = {
+            "node-pkg": "package.json",
+            "npm":      "package.json",
+          }
+
+          severity_map = {
+            "CRITICAL": "CRITICAL",
+            "HIGH":     "MAJOR",
+            "MEDIUM":   "MINOR",
+            "LOW":      "INFO",
+            "UNKNOWN":  "INFO"
+          }
+
           issues = []
           for result in trivy.get("Results", []):
+            target_type = result.get("Type", "")
+            # Usa package.json para dependências node, Dockerfile para OS
+            if target_type in ("node-pkg", "npm"):
+              file_path = "package.json"
+            else:
+              file_path = "Dockerfile"
+
             for vuln in result.get("Vulnerabilities", []):
-              severity_map = {
-                "CRITICAL": "CRITICAL",
-                "HIGH":     "MAJOR",
-                "MEDIUM":   "MINOR",
-                "LOW":      "INFO",
-                "UNKNOWN":  "INFO"
-              }
+              title = vuln.get("Title") or vuln.get("Description") or vuln.get("VulnerabilityID", "Sem descrição")
+              pkg   = vuln.get("PkgName", "")
+              ver   = vuln.get("InstalledVersion", "")
+              fixed = vuln.get("FixedVersion", "")
+              msg   = f"[{vuln.get('VulnerabilityID')}] {pkg} {ver}: {title}"
+              if fixed:
+                msg += f" (fix: {fixed})"
+
               issues.append({
-                "engineId":   "trivy",
-                "ruleId":     vuln.get("VulnerabilityID", "UNKNOWN"),
-                "severity":   severity_map.get(vuln.get("Severity", "UNKNOWN"), "INFO"),
-                "type":       "VULNERABILITY",
+                "engineId": "trivy",
+                "ruleId":   vuln.get("VulnerabilityID", "UNKNOWN"),
+                "severity": severity_map.get(vuln.get("Severity", "UNKNOWN"), "INFO"),
+                "type":     "VULNERABILITY",
                 "primaryLocation": {
-                  "message":   vuln.get("Title", vuln.get("Description", "Sem descrição"))[:255],
-                  "filePath":  "."
+                  "message":  msg[:255],
+                  "filePath": file_path
                 }
               })
 
