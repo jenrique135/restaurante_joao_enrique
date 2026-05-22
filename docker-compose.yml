@@ -18,7 +18,7 @@ services:
       retries: 10
 
   app:
-    image: jenrique138/app:ab0544c5aa8e69f708179815d8f9fd78044654bb
+    build: .
     container_name: marmitatech-app
     ports:
       - "3000:3000"
