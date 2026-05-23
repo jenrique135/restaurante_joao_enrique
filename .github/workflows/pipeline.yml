@@ -257,7 +257,7 @@ jobs:
             cd /home/${{ secrets.EC2_USER }}/deploy_jenrique
 
             # Força o pull da nova imagem e sobe o container do aluno
-            docker compose -f docker-compose-jenrique.yml pull
-            docker compose -f docker-compose-jenrique.yml up -d
+            sudo docker compose -f docker-compose-jenrique.yml pull
+            sudo docker compose -f docker-compose-jenrique.yml up -d
 
             echo "✅ Deploy do aluno jenrique finalizado com sucesso!"
