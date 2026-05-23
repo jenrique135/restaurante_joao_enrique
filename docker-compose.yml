@@ -12,5 +12,5 @@ services:
     
 networks:
   rede_alunos:
-    exeternal: true
+    external: true
 
