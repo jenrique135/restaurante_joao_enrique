@@ -18,14 +18,12 @@ RUN npm install --omit=dev --ignore-scripts
 COPY index.js ./
 COPY views ./views
 
+
 EXPOSE 3000
 
 # Usuário sem privilégios para execução do processo
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# Verifica se a aplicação está respondendo a cada 30s
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ || exit 1
 
 CMD ["node", "index.js"]

@@ -1,6 +1,6 @@
 services:
   app:
-    image: jenrique138/app:3c4efcc465484b75045d55237016d8c012701591
+    image: jenrique138/app:staging
     container_name: jenrique_dock
     ports:
       - "8080:3000"
