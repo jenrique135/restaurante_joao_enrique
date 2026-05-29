@@ -9,6 +9,9 @@ services:
       DB_USER: root
       DB_PASS: password
       DB_NAME: jenrique_dock
+      DB_PORT: 3306
+    networks:
+      - rede_alunos
 
 networks:
   rede_alunos:

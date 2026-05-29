@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS jenrique_dock;
+USE jenrique_dock; 
+
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
